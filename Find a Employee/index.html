@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Employee List - Angular JS</title>
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+	<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>
+
+      <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+  
+    <div class="mainContainer" ng-app="buddyList">
+  <h1 class="text-center"><strong><i>Find an Employee</i></strong></h1>
+  <!-- nav section -->
+  <div class="container well">
+    <nav class="" ng-controller="navCtrl">
+      <div class="container-fluid">
+        <div class="nav-header">
+          <ul class="nav nav-tabs center-block" ng-controller="navCtrl">
+            <li ng-repeat="navLink in nav.navItems" ng-class="{active : $index === nav.selectedIndex}">
+              <a class="text-center" ng-click="nav.navClick($index)" ng-href="#/{{navLink}}">{{navLink}}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="row" ng-controller="homeCtrl">
+      <!--     buddy list      -->
+      <div class="col-xs-12 col-sm-3 panel-body">
+
+
+        <ul class="list-group">
+          <li class="list-group-item">
+            <input class="form-control" placeholder="Seach An Employee" type="text" ng-model="searchText">
+            <section class="text-center" id="sorting">
+              <h6>Sorty By</h6>
+              <a class="sortOption label label-primary" ng-click="sortBy('firstName')">First Name</a>
+              <a class="sortOption label label-primary" ng-click="sortBy('status')">Status</a>
+              <a class="sortOption label label-primary" ng-click="sortBy('birthday')">Birthday</a>
+            </section>
+            <buddy class="list-group-item" ng-repeat="buddy in buddys | orderBy:sortOptionSelected | filter: searchText "></buddy>
+          </li>
+        </ul>
+      </div>
+
+      <!--   ng-view below       -->
+      <div class="col-xs-12 col-sm-9 col-md-9">
+        <div class="list-group panel-body">
+          <div ng-view></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!--  html templates used by angular, usually in separate files -->
+  <script type="text/ng-template" id="default.html">
+    <div class="alert alert-success text-center" ng-class="{hidden : !removed}"> {{removed}}</div>
+    <div class="list-group-item text-center">Please select a Buddy to view</div>
+  </script>
+
+  <!--  template for displaying a buddys info  -->
+  <script type="text/ng-template" id="buddy_info.html">
+    <div class="list-group-item panel panel-primary">
+      <h3 class="text-center panel-heading">{{currentBuddy.firstName}} {{currentBuddy.lastName}}</h3>
+      <section class="info">
+        <p>User Name: {{currentBuddy.userName}}</p>
+        <p>email: <a ng-href="{{currentBuddy.email}}">{{currentBuddy.email}}</a></p>
+        <p>Phone: {{currentBuddy.phone}}</p>
+        <p>Birthday: {{currentBuddy.birthday | date:'MM/dd/yyyy'}}</p>
+        <p ng-model="buddyStatus" ng-init="buddyStatus = currentBuddy.status">Status: {{currentBuddy.status}} </p>
+        <p ng-if="buddyStatus == 'Offline'">Last Seen: {{currentBuddy.lastSeen | date:'MM/dd/yyyy @ h:mma'}}</p>
+      </section>
+
+      <section class="profileImage">
+        <img src="{{currentBuddy.picture}}" class="img-responsive" />
+      </section>
+
+      <p id="bio">Bio:</p>
+      <p class="well well-lg">{{currentBuddy.bio}}</p>
+
+
+      <a ng-href="#/edit/{{buddys.indexOf(currentBuddy)}}">
+        <button class="btn btn-default">
+            <span class="glyphicon glyphicon-pencil"></span><span> - Edit</span>
+          </button>
+      </a>
+
+      <a href="#/"><button class="btn btn-default" ng-click="removeBuddy(currentBuddy)">
+          <span class="glyphicon glyphicon-remove"></span><span> - Remove</span>
+        </button></a>
+    </div>
+  </script>
+
+  <!--   template used for both adding a new buddy and editing an existing buddy   -->
+  <script type="text/ng-template" id="buddy_form.html">
+    <div ng-controller="addBuddyCtrl">
+      <div class="list-group-item">
+        <h3 class="text-center">{{currentBuddy.firstName}} {{currentBuddy.lastName}}</h3>
+        <form name="buddyForm" onsubmit="return validation()">
+        <div class="form-group">
+    
+          <p><label for="userName">User Name: </label> <input name ="uname" id="userName" class="form-control" type="text" ng-model="currentBuddy.userName" placeholder="Enter a User Name" required> </p>
+          <p><label for="firstName">First Name: </label> <input name="fname" id="firstName" class="form-control" type="text" ng-model="currentBuddy.firstName" placeholder="Enter your First Name" required> </p>
+          <p><label for="lastName">Last Name: </label> <input name="lname" id="lastName" class="form-control" type="text" ng-model="currentBuddy.lastName" placeholder="Enter your Last Name" required> </p>
+          <p><label for="email">email:</label> <input name="email" id="email" class="form-control" type="email" ng-model="currentBuddy.email" placeholder="example@domain.com" required> </p>
+          <p><label for="phone">phone:</label> <input name="ph" id="phone" class="form-control" type="tel" ng-model="currentBuddy.phone" placeholder="888 888 8888" required> </p>
+          <p><label for="birthday">birthday:</label> <input name="bday" id="birthday" class="form-control" type="date" ng-model="currentBuddy.birthday" required> </p>
+		  <p><label for="status">Status:</label> <input name="status"id="status" class="form-control" type="Text" ng-model="currentBuddy.status" required></p>
+          <p><label for="bio">Bio:</label></p>
+          <textarea name="bio" class="form-control" id="bio" rows="3" ng-model="currentBuddy.bio" required></textarea>
+          <input type="submit" name="" value="validate">
+        </div>
+
+        <a ng-if="path === '/Add' " ng-href="{{myLink}}" ng-click="addBuddy()">
+          <button class="btn btn-primary" ng-disabled="buddyForm.$invalid" required>
+             <span class=""></span>
+             <span> Add</span>
+            </button>
+        </a>
+        
+        <a ng-if="path !== '/Add'" ng-href="#/buddy-info/{{index}}">
+          <button class="btn btn-default">
+             <span class="glyphicon glyphicon-ok"></span>
+             <span> Save Edits</span>
+            </button>
+        </a>
+
+        <a href="#/">
+          <button class="btn btn-danger">
+              <span class="glyphicon glyphicon-remove"></span><span>  Cancel</span>
+            </button>
+        </a>
+        </form>
+      </div>
+    </div>
+  </script>
+  
+    <script type="text/ng-template" id="myModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">I'm a modal!</h3>
+        </div>
+        <div class="modal-body">
+            <ul>
+                <li ng-repeat="item in items">
+                    <a href="#" ng-click="$event.preventDefault(); selected.item = item">{{ item }}</a>
+                </li>
+            </ul>
+            Selected: <b>{{ selected.item }}</b>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+
+  <!--      template used for the ng-repeat in the buddy list        -->
+  <script type="text/ng-template" id="buddy.html">
+    <a class="" ng-href="#/buddy-info/{{buddys.indexOf(buddy)}}">
+      <h4>{{buddy.firstName}} {{buddy.lastName}}</h4>
+      <p>{{buddy.userName}} | {{buddy.status}}</p>
+    </a>
+  </script>
+</div>
+		<script src='http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.1/angular.min.js'></script>
+		<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.2.5/ui-bootstrap.min.js'></script>
+		<script  src="js/index.js"></script>
+</body>
+
+</html>
